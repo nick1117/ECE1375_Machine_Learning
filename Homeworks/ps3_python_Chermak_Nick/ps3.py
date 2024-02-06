@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sigmoid import sigmoid
 from costFunction import costFunction
@@ -71,6 +72,7 @@ print(f'The cost function using the toy data is: {J_toy}')
 theta_zeros = np.zeros(X_train.shape[1])
 theta_zeros.shape = (len(theta_zeros),1)
 #call fmin_bfgs function for convergence
+#Y_train.shape = (len(Y_train),)
 theta_opt = fmin_bfgs(costFunction,theta_zeros, fprime = gradFunction, args = (X_train, Y_train))
 theta_opt.shape = (len(theta_opt),1)
 cost_opt = costFunction(theta_opt, X_train,Y_train)
@@ -92,4 +94,57 @@ plt.savefig('output\\ps3-1-f.png')
 plt.show()
 
 #Part h
-accuracy = / len(Y_test)
+#Get prediction
+h_pred = sigmoid(X_test @ theta_opt)
+count = 0 
+#if predicition is greater or equal to 0.5 make it a 1 if not make it a 0
+#if the prediction at the index matches the Ytest data, increatment count
+for i in range (len(h_pred)):
+    if h_pred[i] >= 0.5:
+        h_pred[i] = 1
+    else:
+        h_pred[i] = 0
+
+    if h_pred[i] == Y_test[i]:
+        count += 1
+accuracy = count / len(Y_test)
+print(accuracy)
+
+#Part i
+#create data for tests with normalized value
+scores = np.array([1, 60, 65])
+scores.shape = (1,len(scores))
+h_scores = sigmoid(scores @ theta_opt)
+#text output
+print(f'The admission probability is {h_scores}')
+if h_scores >= 0.5:
+    print('The decision should be to admit')
+else:
+    print('The decision should be to not admit')
+
+
+
+#Question 2
+#Part a
+data2 = pd.read_csv('input\\hw3_data2.csv', header=None)
+X2 = data2.values[:, 0] 
+Y2 = data2.values[:, 1] 
+X2.shape = (len(X2),1)
+Y2.shape = (len(Y2),1)
+X2 = np.concatenate((X2,X2**2), axis = 1)
+X2 = np.concatenate((np.ones((len(Y2),1)), X2), axis = 1)
+
+#normal equation from HW 2 
+theta_2 = np.linalg.pinv(X2.T @ X2) @ X2.T @ Y2
+print(f'The optimal values of theta are: {theta_2.T}')
+
+#part b
+x_val_2 = np.linspace(np.min(X2[:,1]),np.max(X2[:,1]), num=100)
+y_val_2 = theta_2[0] + theta_2[1]*x_val_2 + theta_2[2]*(x_val_2 ** 2)
+plt.plot(x_val_2,y_val_2,'b-', label = 'Learned model')
+plt.scatter(X2[:,1], Y2[:,0])
+plt.xlabel('Population in thouthands, n')
+plt.ylabel('profit')
+plt.savefig('output\\ps3-2-b.png')
+plt.show()
+
