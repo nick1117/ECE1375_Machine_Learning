@@ -1,9 +1,11 @@
 import scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from Reg_normalEqn import Reg_normalEqn
 from computeCost import computeCost
 from logReg_multi import logReg_multi
+from sklearn.neighbors import KNeighborsClassifier
 
 
 
@@ -19,16 +21,8 @@ y = np.array(data1["y"])
 
 #set data 2
 #print(data2.keys())
-X1 = np.array(data2["X1"])
-X2 = np.array(data2["X2"])
-X3 = np.array(data2["X3"])
-X4 = np.array(data2["X4"])
-X5 = np.array(data2["X5"])
-y1 = np.array(data2["y1"])
-y2 = np.array(data2["y2"])
-y3 = np.array(data2["y3"])
-y4 = np.array(data2["y4"])
-y5 = np.array(data2["y5"])
+X_data_2 = np.array([data2["X1"], data2["X2"], data2["X3"], data2["X4"], data2["X5"]])
+y_data_2 = np.array([data2["y1"], data2["y2"], data2["y3"], data2["y4"], data2["y5"]])
 
 #Set Data 3
 #print(data3.keys())
@@ -54,6 +48,8 @@ L = [0, 0.001, 0.003, 0.005, 0.007, 0.009, 0.012, 0.017]
 error_train_total = []
 error_test_total = []
 #start loop
+#c
+#np.random.seed(0)
 for i in range (iters):
     #creat random test and train from data using 88%
     rows, cols = y.shape
@@ -66,10 +62,12 @@ for i in range (iters):
     #initialize vectors for error over lambda for this iteration and clear it from last iteration
     error_train_vect = []
     error_test_vect = []
-
+    
+    
     for j in L:
         #calculate theta
         theta = Reg_normalEqn(X_train_1c, y_train_1c, j)
+        
         #calculate error
         error_train = computeCost(X_train_1c, y_train_1c, theta)
         error_test = computeCost(X_test_1c, y_test_1c, theta)
@@ -80,8 +78,8 @@ for i in range (iters):
     #add to total error vector declared befroe loop
     error_train_total.append(error_train_vect)
     error_test_total.append(error_test_vect)
-
-#compute mean of each column
+#import pdb; pdb.set_trace()
+#compute mean of each column once the whole matrix is made
 col_avg_train = np.mean(error_train_total, axis = 0)
 col_avg_test = np.mean(error_test_total, axis = 0)
 #plot data
@@ -98,36 +96,51 @@ print(f'The suggested lambda is: {L[min_lamdba_test_index]}')
 
 #Question 2
 #load 1 set
-X_train1 = np.concatenate([X1, X2, X3, X4], axis=0)
-X_test1 = X5
-y_train1 = np.concatenate([y1, y2, y3, y4], axis=0)
-y_test1 = y5
-#load 2 set
-X_train2 = np.concatenate([X1, X2, X3, X5], axis=0)
-X_test2 = X4
-y_train2 = np.concatenate([y1, y2, y3, y5], axis=0)
-y_test2 = y4
-#load 3 set
-X_train3 = np.concatenate([X1, X2, X4, X5], axis=0)
-X_test3 = X3
-y_train3 = np.concatenate([y1, y2, y4, y5], axis=0)
-y_test3 = y3
-#load 4 set
-X_train4 = np.concatenate([X1, X3, X4, X5], axis=0)
-X_test4 = X2
-y_train4 = np.concatenate([y1, y3, y4, y5], axis=0)
-y_test4 = y2
-#load 5 set
-X_train5 = np.concatenate([X2, X3, X4, X5], axis=0)
-X_test5 = X1
-y_train5 = np.concatenate([y2, y3, y4, y5], axis=0)
-y_test5 = y1
 
 #part a
-#for K in range(1,15,2):
-#    for num in range(1, 6):
-#        X_train_current = X_train+str(num)
-#        y_train_current = y_train+str(num)
+K = [1, 3, 5, 7, 9, 11, 13, 15]
+accuracy = np.zeros((len(X_data_2),len(K)))
+for i, features in enumerate(X_data_2):
+    Current_Xtrain = np.delete(X_data_2, i, axis=0)
+    Current_Xtrain = np.vstack(Current_Xtrain)
+    Current_yTrain = np.delete(y_data_2, i, axis = 0)
+    Current_yTrain = np.vstack(Current_yTrain)
+    Current_yTrain = Current_yTrain.ravel()
+    Current_yTest = y_data_2[i].ravel()
+    for j, k in enumerate(K):
+        knn = KNeighborsClassifier(k)
+        knn.fit(Current_Xtrain,Current_yTrain)
+        prediction = knn.predict(features)
+        prediction = prediction.ravel()
+        accuracy[i][j] = np.average(prediction == Current_yTest)
+avg_acc = np.average(accuracy, axis=0)
+
+plt.plot(K,avg_acc)
+plt.xlabel('K')
+plt.ylabel('Average Accuracy')
+plt.xticks(K)
+plt.savefig('output\\ps4-2-a.png')
+plt.show()
 
 #Question 3
+y_test_predict = logReg_multi(X_train, y_train, X_test)
+y_train_predict = logReg_multi(X_train, y_train, X_train)
+test_count = 0
+train_count = 0                              
+for i in range (len(y_test)):
+    if y_test_predict[i] == y_test[i]:
+        test_count = test_count + 1
+for i in range (len(y_train)):
+    if y_train_predict[i] == y_train[i]:
+        train_count = train_count + 1
 
+accuracy_train = train_count / len(y_train)
+accuracy_test = test_count / len(y_test)
+
+
+data = {'Accuracy': [accuracy_train, accuracy_test]}
+labels = ['training', 'testing']
+acc_table = pd.DataFrame(data)
+print(acc_table)
+#df = pd.DataFrame(acc_table)
+#print(df)
