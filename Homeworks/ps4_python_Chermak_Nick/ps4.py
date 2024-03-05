@@ -2,6 +2,7 @@ import scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from tabulate import tabulate
 from Reg_normalEqn import Reg_normalEqn
 from computeCost import computeCost
 from logReg_multi import logReg_multi
@@ -98,23 +99,32 @@ print(f'The suggested lambda is: {L[min_lamdba_test_index]}')
 #load 1 set
 
 #part a
+#create K value array to iterate through
 K = [1, 3, 5, 7, 9, 11, 13, 15]
+#crate accuracy table to pupulate later
 accuracy = np.zeros((len(X_data_2),len(K)))
+#Loop through i and enumerate through Xdata2
 for i, features in enumerate(X_data_2):
+    #Load each set of data during loop so it changes
     Current_Xtrain = np.delete(X_data_2, i, axis=0)
     Current_Xtrain = np.vstack(Current_Xtrain)
     Current_yTrain = np.delete(y_data_2, i, axis = 0)
     Current_yTrain = np.vstack(Current_yTrain)
     Current_yTrain = Current_yTrain.ravel()
     Current_yTest = y_data_2[i].ravel()
+    #Now loop through K
     for j, k in enumerate(K):
+        #Cal classifier, fit and knn.predict
         knn = KNeighborsClassifier(k)
         knn.fit(Current_Xtrain,Current_yTrain)
         prediction = knn.predict(features)
         prediction = prediction.ravel()
+        #Load into accuracy table (row is data, column is K)
         accuracy[i][j] = np.average(prediction == Current_yTest)
-avg_acc = np.average(accuracy, axis=0)
+#Calculate average
+avg_acc = np.average(accuracy, axis=0) 
 
+#plot data vs K
 plt.plot(K,avg_acc)
 plt.xlabel('K')
 plt.ylabel('Average Accuracy')
@@ -123,6 +133,8 @@ plt.savefig('output\\ps4-2-a.png')
 plt.show()
 
 #Question 3
+#part a
+#create 
 y_test_predict = logReg_multi(X_train, y_train, X_test)
 y_train_predict = logReg_multi(X_train, y_train, X_train)
 test_count = 0
@@ -137,10 +149,8 @@ for i in range (len(y_train)):
 accuracy_train = train_count / len(y_train)
 accuracy_test = test_count / len(y_test)
 
+#part b
+data = [[accuracy_train, accuracy_test]]
 
-data = {'Accuracy': [accuracy_train, accuracy_test]}
-labels = ['training', 'testing']
-acc_table = pd.DataFrame(data)
-print(acc_table)
-#df = pd.DataFrame(acc_table)
-#print(df)
+# Display the accuracy values in a table
+print(tabulate(data, headers=["Training Accuracy", "Testing Accuracy"], tablefmt="grid"))
