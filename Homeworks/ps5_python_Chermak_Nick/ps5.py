@@ -243,3 +243,4 @@ print(tabulate(train_times, headers=["Decision Function Shape", "one vs one", "o
 
 print("Table for accuracies for each model")
 print(tabulate(accuracies, headers=["Decision Function Shape", "one vs one", "one vs all"], tablefmt="grid"))
+##
