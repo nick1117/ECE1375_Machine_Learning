@@ -154,3 +154,4 @@ data = [[accuracy_train, accuracy_test]]
 
 # Display the accuracy values in a table
 print(tabulate(data, headers=["Training Accuracy", "Testing Accuracy"], tablefmt="grid"))
+#
