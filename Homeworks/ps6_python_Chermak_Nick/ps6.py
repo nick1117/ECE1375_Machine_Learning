@@ -116,3 +116,4 @@ for entry in X_test:
     
 accuracy_Q2 = accuracy_score(Y_test, class_prediction_Q2)
 print(f'The accuracy of using MLE and Discriminant function for classification is: {accuracy_Q2 * 100} %')
+print(f'The accuracy of the naïve classifier and the MLE based classifier seem to both be high (88% and above) however no method seems to always preform better')
