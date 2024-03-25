@@ -1,6 +1,9 @@
 import scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
+from predict import predict
+from sklearn.metrics import accuracy_score
+
 
 #Question 0
 #part a
@@ -26,4 +29,14 @@ X_test = X[rand_image[13000:]]
 y_test = y[rand_image[13000:]]
 
 #Question 1
+#part a
+weights = scipy.io.loadmat("input\\HW7_weights_3_full.mat")
+Theta1 = weights["Theta1"]  
+Theta2 = weights["Theta2"]
+prediction, h_x = predict(Theta1, Theta2, X)
 
+#part b
+accuracy = accuracy_score(y, prediction)
+print(f'The accuracy of the prediction from the function is: {accuracy*100} %')
+
+#Question 2
